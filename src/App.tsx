@@ -41,6 +41,7 @@ import { HowToPlayModal } from './components/HowToPlayModal';
 import { SettingsModal } from './components/SettingsModal';
 import { StudentProfileModal } from './components/StudentProfileModal';
 import { SuburbanAlmanac } from './components/SuburbanAlmanac';
+import { PvZMusicPlayer } from './components/PvZMusicPlayer';
 
 export default function App() {
   // Navigation & Screens - Defaults to the authentic PvZ Title Screen on front page
@@ -1044,6 +1045,13 @@ export default function App() {
         onClose={() => setShowAlmanac(false)}
         activeDeck={activeDeck}
         onUpdateActiveDeck={setActiveDeck}
+      />
+
+      {/* 10. PVZ BACKGROUND MUSIC PLAYER (YOUTUBE INTEGRATION) */}
+      <PvZMusicPlayer
+        currentScreen={screen}
+        isMuted={isMuted}
+        onToggleMute={handleToggleMute}
       />
 
     </div>
