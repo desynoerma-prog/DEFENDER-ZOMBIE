@@ -1,0 +1,6 @@
+{
+  "name": "Percent Defender",
+  "description": "Game tower defense edukasi matematika kelas 4 SD: Mengubah persen menjadi pecahan dan bilangan desimal untuk menyelamatkan Math Garden.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
