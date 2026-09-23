@@ -8,6 +8,7 @@ interface GameOverModalProps {
   totalQuestions?: number;
   onRetry: () => void;
   onMenu: () => void;
+  onOpenReport?: () => void;
 }
 
 export const GameOverModal: React.FC<GameOverModalProps> = ({
@@ -15,7 +16,8 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
   correctAnswers = 0,
   totalQuestions = 0,
   onRetry,
-  onMenu
+  onMenu,
+  onOpenReport
 }) => {
   useEffect(() => {
     soundManager.playGameOver();
@@ -110,11 +112,27 @@ export const GameOverModal: React.FC<GameOverModalProps> = ({
           </div>
         </div>
 
-        <div className="mb-4 text-xs font-bold text-slate-500 flex items-center justify-center gap-2">
+        <div className="mb-3 text-xs font-bold text-slate-500 flex items-center justify-center gap-2">
           <span>Skor Game: <strong className="text-slate-800">{score.toLocaleString('id-ID')}</strong></span>
           <span>•</span>
           <span>Matahari dari Soal: <strong className="text-amber-600">+{correctAnswers * 100} ☀️</strong></span>
         </div>
+
+        {/* View Full Learning Report Button */}
+        {onOpenReport && (
+          <div className="mb-3">
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onOpenReport();
+              }}
+              className="clay-btn clay-btn-blue w-full py-2.5 px-4 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span>📊</span>
+              <span>Buka Rapor Lengkap 5 Elemen STEAM</span>
+            </button>
+          </div>
+        )}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2 border-t">

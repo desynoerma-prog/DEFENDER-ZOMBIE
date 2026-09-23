@@ -3,18 +3,70 @@ export type AdventureLevel = 'lower' | 'middle' | 'strong';
 export type ArenaTheme = 'garden' | 'water' | 'roof';
 export type QuestionType = 'A_PERCENT_TO_FRACTION' | 'B_PERCENT_TO_DECIMAL' | 'C_PERCENT_TO_BOTH' | 'D_IDENTIFY_CORRECT';
 
+// 5 Indonesian Elementary Grade 4 Mathematics Curriculum Elements
+export type MathElement = 'Bilangan' | 'Aljabar' | 'Pengukuran' | 'Geometri' | 'Data';
+export type MathDifficulty = 'LOW' | 'MIDDLE' | 'HARD';
+
+export interface MathQuestion {
+  id: string;
+  element: MathElement;
+  subtopic: string;
+  difficulty: MathDifficulty;
+  type: 'multiple_choice';
+  question: string;
+  highlightText?: string;
+  visual?: string; // Diagrams, ASCII charts, shapes, or tables
+  options: string[]; // exactly 4 options
+  correctAnswer: number; // 0-based index
+  explanation: string;
+  hints: string[]; // 1 to 3 progressive hints
+  skill: string;
+  estimatedTime: number; // in seconds (LOW: 10-20, MIDDLE: 20-40, HARD: 40-90)
+  isBossQuestion?: boolean;
+}
+
+export interface QuestionAttempt {
+  questionId: string;
+  element: MathElement;
+  subtopic: string;
+  difficulty: MathDifficulty;
+  skill: string;
+  isCorrect: boolean;
+  hintsUsed: number;
+  timeSpentSeconds?: number;
+}
+
+export interface SessionLearningReport {
+  score: number;
+  totalQuestions: number;
+  correctAnswers: number;
+  wrongAnswers: number;
+  accuracy: number; // in percentage 0-100
+  highestCombo: number;
+  finalEnergy: number;
+  elementPerformance: Record<MathElement, { total: number; correct: number; percentage: number }>;
+  masteredSkills: string[];
+  needsPracticeSkills: string[];
+}
+
 export interface Question {
   id: string;
-  type: QuestionType;
-  difficulty: Difficulty;
+  type?: QuestionType | string;
+  difficulty?: Difficulty | MathDifficulty;
   adventureTier?: AdventureLevel;
-  topic: string;
+  element?: MathElement;
+  subtopic?: string;
+  topic?: string;
   questionText: string;
   highlightText?: string;
+  visual?: string;
   choices: string[];
   correctAnswerIndex: number;
   explanation: string;
   hints: string[]; // 3-step progressive hints
+  skill?: string;
+  estimatedTime?: number;
+  isBossQuestion?: boolean;
 }
 
 export type PlantType =
@@ -147,6 +199,7 @@ export interface StudentProfile {
   id: string;
   name: string;
   grade: string; // e.g. "Kelas 4-A"
+  school?: string;
   avatar: string; // plant icon type
   lastPlayed?: string;
   score?: number;

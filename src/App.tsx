@@ -42,6 +42,8 @@ import { SettingsModal } from './components/SettingsModal';
 import { StudentProfileModal } from './components/StudentProfileModal';
 import { SuburbanAlmanac } from './components/SuburbanAlmanac';
 import { PvZMusicPlayer } from './components/PvZMusicPlayer';
+import { StudentReportModal } from './components/StudentReportModal';
+import { questionEngine } from './utils/questionEngine';
 
 export default function App() {
   // Navigation & Screens - Defaults to the authentic PvZ Title Screen on front page
@@ -53,6 +55,7 @@ export default function App() {
   const [showGameOver, setShowGameOver] = useState<boolean>(false);
   const [showProfileModal, setShowProfileModal] = useState<boolean>(false);
   const [showAlmanac, setShowAlmanac] = useState<boolean>(false);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [isMuted, setIsMuted] = useState<boolean>(soundManager.isMuted);
 
   // Active Deck for Combat (from Almanac)
@@ -153,7 +156,9 @@ export default function App() {
     setCorrectAnswers(0);
     setShowVictory(false);
     setShowGameOver(false);
+    setShowReportModal(false);
     setPendingDefeatQuestion(null);
+    questionEngine.resetSession(adventureLevel);
 
     lastSkySunTimeRef.current = Date.now();
     lastZombieSpawnRef.current = Date.now();
@@ -673,17 +678,18 @@ export default function App() {
           }
         }
 
-        // 5. DETECT DEFEATED ZOMBIE -> TRIGGER MATH QUESTION!
+        // 5. DETECT DEFEATED ZOMBIE -> TRIGGER ADAPTIVE MATH QUESTION!
         // As requested: "Nah setiap membunuh satu zombie maka akan keluar 1 soal."
-        // Requirement 2: Level Soal "Lower", "Middle", "Strong" disesuaikan dengan kemampuan siswa kelas 4 SD
+        // Uses the Adaptive STEAM Mathematics Question Engine for Grade 4 SD
         const defeatedZombies = prev.filter((z) => z.hp <= 0);
         if (defeatedZombies.length > 0 && !pendingDefeatQuestion) {
-          const pool = getQuestionsByAdventureLevel(adventureLevel);
-          const randomQ = getRandomizedQuestion(
-            pool[Math.floor(Math.random() * pool.length)]
-          );
+          const adaptiveQ = questionEngine.getNextQuestion({
+            worldId: selectedLevelId,
+            tier: adventureLevel,
+            isBossWave: currentWave >= activeLevel.totalWaves
+          });
           setPendingDefeatQuestion({
-            question: randomQ,
+            question: adaptiveQ,
             zombieName: defeatedZombies[0].name
           });
         }
@@ -815,6 +821,10 @@ export default function App() {
   const handleAnswerDefeatQuestion = (isCorrect: boolean) => {
     setQuestionsAnswered((prev) => prev + 1);
 
+    if (pendingDefeatQuestion) {
+      questionEngine.recordAnswer(pendingDefeatQuestion.question, isCorrect);
+    }
+
     if (isCorrect) {
       setCorrectAnswers((prev) => prev + 1);
       const nextCombo = combo + 1;
@@ -865,32 +875,24 @@ export default function App() {
   };
 
   const handleStartAdventure = () => {
-    startLevel(1);
+    setScreen('MENU');
   };
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col font-sans select-none antialiased text-slate-900">
       
-      {/* 0. AUTHENTIC PLANTS VS. ZOMBIES TITLE SCREEN (HALAMAN DEPAN) */}
+      {/* 0. AUTHENTIC PLANTS VS. ZOMBIES TITLE SCREEN (HALAMAN DEPAN BERSIH) */}
       {screen === 'TITLE' && (
         <TitleScreen
           currentProfile={currentProfile}
-          selectedAdventureLevel={adventureLevel}
-          onSelectAdventureLevel={handleSelectAdventureLevel}
-          selectedArenaTheme={arenaTheme}
-          onSelectArenaTheme={handleSelectArenaTheme}
           onStartAdventure={handleStartAdventure}
           onOpenProfileModal={() => setShowProfileModal(true)}
-          onOpenLevelSelect={() => setScreen('LEVEL_SELECT')}
-          onOpenHowToPlay={() => setShowHowToPlay(true)}
-          onOpenClassroom={() => setScreen('CLASSROOM')}
-          onOpenAlmanac={() => setShowAlmanac(true)}
           isMuted={isMuted}
           onToggleMute={handleToggleMute}
         />
       )}
 
-      {/* 1. MAIN MENU WITH PROFILE, ADVENTURE LEVEL & THEME SELECTION */}
+      {/* 1. HALAMAN KEDUA: MENU PERSIAPAN (1. MATERI, 2. TINGKAT SOAL, 3. LATAR TEMPAT, 4. 10 SENJATA KARAKTER) */}
       {screen === 'MENU' && (
         <MainMenu
           currentProfile={currentProfile}
@@ -899,13 +901,18 @@ export default function App() {
           onSelectAdventureLevel={handleSelectAdventureLevel}
           selectedArenaTheme={arenaTheme}
           onSelectArenaTheme={handleSelectArenaTheme}
-          onStartAdventure={handleStartAdventure}
+          selectedTopicId={selectedLevelId}
+          onSelectTopicId={(topicId) => setSelectedLevelId(topicId)}
+          activeDeck={activeDeck}
+          onUpdateDeck={(deck) => setActiveDeck(deck)}
+          onStartGame={() => startLevel(selectedLevelId)}
           onOpenLevelSelect={() => setScreen('LEVEL_SELECT')}
-          onOpenBadges={() => setShowBadges(true)}
-          onOpenHowToPlay={() => setShowHowToPlay(true)}
           onOpenClassroom={() => setScreen('CLASSROOM')}
-          onOpenSettings={() => setShowSettings(true)}
+          onOpenAlmanac={() => setShowAlmanac(true)}
+          onOpenHowToPlay={() => setShowHowToPlay(true)}
           onBackToTitle={() => setScreen('TITLE')}
+          isMuted={isMuted}
+          onToggleMute={handleToggleMute}
           highScore={userStats.highScore}
         />
       )}
@@ -992,6 +999,7 @@ export default function App() {
             setShowVictory(false);
             setScreen('MENU');
           }}
+          onOpenReport={() => setShowReportModal(true)}
         />
       )}
 
@@ -1006,6 +1014,16 @@ export default function App() {
             setShowGameOver(false);
             setScreen('MENU');
           }}
+          onOpenReport={() => setShowReportModal(true)}
+        />
+      )}
+
+      {/* 7.5 STUDENT STEAM LEARNING REPORT MODAL */}
+      {showReportModal && (
+        <StudentReportModal
+          report={questionEngine.generateSessionReport(score, highestCombo, sun)}
+          playerName={currentProfile.name || 'Siswa Kelas 4'}
+          onClose={() => setShowReportModal(false)}
         />
       )}
 

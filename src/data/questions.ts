@@ -1,6 +1,11 @@
 import { Question, AdventureLevel } from '../types';
+import { GRADE_4_MATH_BANK, toLegacyQuestion } from './mathCurriculum';
+
+// Grade 4 Elementary School Mathematics Curriculum Question Bank
+const CURRICULUM_QUESTIONS: Question[] = GRADE_4_MATH_BANK.map(toLegacyQuestion);
 
 export const QUESTION_BANK: Question[] = [
+  ...CURRICULUM_QUESTIONS,
   // ================= EASY =================
   // Type A: Persen -> Pecahan
   {
@@ -837,23 +842,26 @@ export function getQuestionsByAdventureLevel(level: AdventureLevel): Question[] 
   if (level === 'lower') {
     const list = QUESTION_BANK.filter(
       (q) =>
+        q.difficulty === 'LOW' ||
+        q.difficulty === 'easy' ||
         q.type === 'B_PERCENT_TO_DECIMAL' ||
-        (q.difficulty === 'easy' && q.type === 'A_PERCENT_TO_FRACTION')
+        q.type === 'A_PERCENT_TO_FRACTION'
     );
     return list.length > 0 ? list : QUESTION_BANK;
   }
   if (level === 'middle') {
     const list = QUESTION_BANK.filter(
       (q) =>
+        q.difficulty === 'MIDDLE' ||
+        q.difficulty === 'medium' ||
         q.type === 'C_PERCENT_TO_BOTH' ||
-        q.type === 'D_IDENTIFY_CORRECT' ||
-        q.difficulty === 'medium'
+        q.type === 'D_IDENTIFY_CORRECT'
     );
     return list.length > 0 ? list : QUESTION_BANK;
   }
-  // 'strong'
+  // 'strong' (HOTS / HARD / multi-step)
   const list = QUESTION_BANK.filter(
-    (q) => q.difficulty === 'hard' || q.type === 'C_PERCENT_TO_BOTH' || q.type === 'D_IDENTIFY_CORRECT'
+    (q) => q.difficulty === 'HARD' || q.difficulty === 'hard' || q.isBossQuestion
   );
   return list.length > 0 ? list : QUESTION_BANK;
 }

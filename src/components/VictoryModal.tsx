@@ -14,6 +14,7 @@ interface VictoryModalProps {
   onPlayAgain: () => void;
   onLevelSelect: () => void;
   onMenu: () => void;
+  onOpenReport?: () => void;
 }
 
 export const VictoryModal: React.FC<VictoryModalProps> = ({
@@ -26,7 +27,8 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
   isBossDefeated = false,
   onPlayAgain,
   onLevelSelect,
-  onMenu
+  onMenu,
+  onOpenReport
 }) => {
   useEffect(() => {
     soundManager.playVictory();
@@ -177,6 +179,22 @@ export const VictoryModal: React.FC<VictoryModalProps> = ({
             <span className="text-xs sm:text-sm font-extrabold text-amber-900 font-heading">
               Lencana Terbuka: <span className="underline">{unlockedBadgeName}</span>!
             </span>
+          </div>
+        )}
+
+        {/* View Full Learning Report Button */}
+        {onOpenReport && (
+          <div className="my-3">
+            <button
+              onClick={() => {
+                soundManager.playClick();
+                onOpenReport();
+              }}
+              className="clay-btn clay-btn-blue w-full py-2.5 px-4 text-xs sm:text-sm font-black rounded-xl flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <span>📊</span>
+              <span>Buka Rapor Lengkap 5 Elemen STEAM</span>
+            </button>
           </div>
         )}
 
